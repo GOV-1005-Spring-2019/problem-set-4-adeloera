@@ -42,10 +42,64 @@ The first response of Rep came `r as.integer((poll %>% filter(response == "Dem")
 
 ## Question 2
 
-```{r table} 
+```{r table, echo = FALSE} 
+#To begin I create a dataset with the information and shape that we want: 
+#A five by three table where each row represents an ethnicity 
+#and the columns are the percentage of the vote for each party 
 
+table <- poll %>% 
+  #I begin by selecting only the variables I'll use: response, race/ethnicity, and the survey weights.
+  select(response, race_eth, final_weight) %>% 
+  #I then group by race/ethnicity and response to get total counts for each cell.
+  group_by(race_eth, response) %>% 
+  #When I sum to get total counts for each cell I need to use to survey weights to make sure my results are representative.
+  summarize(total = sum(final_weight)) %>%   
+  #Next I drop the observations I cant work with because they dont have one of the key variables.
+  filter(race_eth != "[DO NOT READ] Don't know/Refused" ,response != "3") %>% 
+  #Now I tidy the data to get the format we want
+  spread(key =  response, value = total) %>%
+  #Since there is an NA in the resulting table which will cause problems later I replace NA's with zeros.
+  replace(is.na(.), 0) %>%
+  #Now I turn the counts I have in each cell into proportions
+  mutate(all = Dem + Rep + Und,
+         Dem = Dem / all,
+         Rep = Rep / all,
+         Und = Und / all) %>% 
+  select(-all) %>%
+  #Finally I ungroup to make the gt commands below work. 
+  ungroup()
 
-
+#Now I use the gt package to turn the tibble I have into a chart like the one in the PSet description
+#when I pipe the table into the gt command I first specify the order of the rows to match the ones in the sample chart.
+table[c(5, 2, 3, 1, 4),] %>%
+gt() %>% 
+  #I add a title and subtitle to describe what the chart is showing.
+  tab_header(
+    title = "Polling Results in the North Carolina 9th Congressional District",
+    subtitle = "Based on 3rd wave of polling, 10/26/18-10/31/18"
+    ) %>% 
+  #I also add a note about the source of our data, which appears to be The Upshot.
+  tab_source_note(
+    source_note = "Source: The UpShot"
+    ) %>%
+  #I use unabreviated column labels because I believe it is marginally clearer. 
+  cols_label(
+    race_eth = "Race/Ethnicity",
+    Dem = "Democrat",
+    Rep = "Republican",
+    Und = "Undecided"
+  ) %>%
+  #I format the numbers, previously proportions, into percentages. 
+  #I prefer not to round to the nearest integer because it creates the impression that the bottom row sums to 101%. 
+  fmt_percent(columns = vars(Dem, Rep, Und),
+              decimals = 2) 
+  
 ```
 
+
+## Question 3
+
+
+
+## Question 4
 
