@@ -1,0 +1,48 @@
+---
+title: "ps_4"
+author: "Andres de Loera-Brust"
+date: "February 25, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(gt)
+library(tidyverse)
+library(broom)
+
+poll <- read_csv(
+  file = "ps_4_elections-poll-nc09-3.csv",
+  col_types = cols(
+    .default = col_character(),
+    turnout_scale = col_double(),
+    turnout_score = col_double(),
+    w_LV = col_double(),
+    w_RV = col_double(),
+    final_weight = col_double(),
+    timestamp = col_datetime(format = "")))
+
+```
+
+## Question 1
+
+There were `r poll %>% filter(response == "Dem") %>% nrow()` respondents who supported the Democratic candidate.
+
+There were `r ` more respondents who favored the Republican candidate than who were Undecided.
+
+There are two gender variables (gender and gender_combined). There are `r ` individuals for whom these variables have different values.
+
+There are `r ` respondents listed as “White” under race_eth who are not listed as “White” under file_race_black.
+
+The first response of Rep came `r ` minutes (rounded to the nearest minute) before the first response of Dem.
+
+
+## Question 2
+
+```{r} 
+
+
+```
+
+
