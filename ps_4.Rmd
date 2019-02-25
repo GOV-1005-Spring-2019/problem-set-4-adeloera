@@ -103,10 +103,31 @@ gt(table) %>%
 
 
 ## Question 3
-```{r violins}
+```{r violins, echo = FALSE}
+#Now I turn to making the violin plots for question 3
 
+#First I select the data I want from the entire poll. This time I want to keep the individual observations 
+#but I just need the education and survey weights variables.
+poll %>%
+  select(educ, final_weight) %>%
+  #I also drop the people who did not provide their education level. 
+  filter(educ != "[DO NOT READ] Refused") %>%
 
-
+#Now I pipe that into ggplot to make a violin plot. 
+  #To get the order and orientiation of variables shown in the example I have to place weight on the y axis 
+  #and reversed education on the x, then flip the coordinates. 
+ggplot(aes(y = final_weight, x = reorder(educ, desc(educ)))) + 
+  geom_violin() + 
+  coord_flip() +
+  #I also want to add dots to this plot, which I do with geom_jitter
+  geom_jitter(position=position_jitter(0.2), alpha = 0.5) +
+  #Then I add the title, subtitle, caption, and labels to match the example. 
+  labs(title = "More Educated Matter Less in North Carolina 9th", 
+       subtitle = "Poll gives more weight to people who are less likely to participate in polls",
+       caption = "New York Times Upshot/Siena College 2018 live polls",
+       y = "Weight Given to Respondent in Calculating Poll Results",
+       x = NULL) 
+  
 ```
 
 
