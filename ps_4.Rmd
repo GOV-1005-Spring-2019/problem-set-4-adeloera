@@ -8,10 +8,12 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+#I begin as always with loading the packages I will use.
 library(gt)
 library(tidyverse)
 library(broom)
 
+#Next I load in the poll data I will be using to answer the questions, adding the column types arguments to my code.
 poll <- read_csv(
   file = "ps_4_elections-poll-nc09-3.csv",
   col_types = cols(
@@ -29,18 +31,19 @@ poll <- read_csv(
 
 There were `r poll %>% filter(response == "Dem") %>% nrow()` respondents who supported the Democratic candidate.
 
-There were `r ` more respondents who favored the Republican candidate than who were Undecided.
+There were `r (filter(poll, response == "Rep") %>% nrow())-(filter(poll, response == "Und") %>% nrow())` more respondents who favored the Republican candidate than who were Undecided.
 
-There are two gender variables (gender and gender_combined). There are `r ` individuals for whom these variables have different values.
+There are two gender variables (gender and gender_combined). There are `r filter(poll, gender != gender_combined) %>% nrow()` individuals for whom these variables have different values.
 
-There are `r ` respondents listed as “White” under race_eth who are not listed as “White” under file_race_black.
+There are `r poll %>% filter(race_eth == "White", file_race_black != "White") %>% nrow()` respondents listed as “White” under race_eth who are not listed as “White” under file_race_black.
 
-The first response of Rep came `r ` minutes (rounded to the nearest minute) before the first response of Dem.
+The first response of Rep came `r as.integer((poll %>% filter(response == "Dem") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1))- (poll %>% filter(response == "Rep") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1)))` minutes (rounded to the nearest minute) before the first response of Dem. In clearer language, the first response of Rep came (roughly) `r as.integer((poll %>% filter(response == "Rep") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1))- (poll %>% filter(response == "Dem") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1)))` minutes after the first response of Dem. 
 
 
 ## Question 2
 
-```{r} 
+```{r table} 
+
 
 
 ```
