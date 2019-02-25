@@ -31,6 +31,8 @@ poll$race_eth <- poll$race_eth %>% fct_relevel("White", "Black", "Hispanic", "As
 
 poll$educ <- poll$educ %>% fct_relevel("Graduate or Professional Degree", "Bachelors' degree", "Some college or trade school", "High school", "Grade school")
 
+poll$file_party <- poll$file_party %>% fct_relevel("Republican", "Democratic", "Other")
+
 
 ```
 
@@ -40,9 +42,9 @@ There were `r poll %>% filter(response == "Dem") %>% nrow()` respondents who sup
 
 There were `r (filter(poll, response == "Rep") %>% nrow())-(filter(poll, response == "Und") %>% nrow())` more respondents who favored the Republican candidate than who were Undecided.
 
-There are two gender variables (gender and gender_combined). There are `r filter(poll, gender != gender_combined) %>% nrow()` individuals for whom these variables have different values.
+There are two gender variables (`gender` and `gender_combined`). There are `r filter(poll, gender != gender_combined) %>% nrow()` individuals for whom these variables have different values.
 
-There are `r poll %>% filter(race_eth == "White", file_race_black != "White") %>% nrow()` respondents listed as “White” under race_eth who are not listed as “White” under file_race_black.
+There are `r poll %>% filter(race_eth == "White", file_race_black != "White") %>% nrow()` respondents listed as “White” under `race_eth` who are not listed as “White” under `file_race_black`.
 
 The first response of Rep came `r as.integer((poll %>% filter(response == "Dem") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1))- (poll %>% filter(response == "Rep") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1)))` minutes (rounded to the nearest minute) before the first response of Dem. In clearer language, the first response of Rep came (roughly) `r as.integer((poll %>% filter(response == "Rep") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1))- (poll %>% filter(response == "Dem") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1)))` minutes after the first response of Dem. 
 
@@ -133,7 +135,33 @@ ggplot(aes(y = final_weight, x = reorder(educ, desc(educ)))) +
 
 ## Question 4
 
-```{r cool}
-  
+```{r cool, echo = FALSE}
+#I chose to create a chart showing how party identification varies across ages. 
 
+#First I create a datatable with the percentage of each age group identifying with each party
+poll %>% 
+  select(file_party, ager, final_weight) %>% 
+  filter(ager != "[DO NOT READ] Refused") %>% 
+  group_by(ager, file_party) %>% 
+  summarize(total = sum(final_weight)) %>%   
+  mutate(freq = total / sum(total), pct = round((freq*100), 0)) %>%
+  ungroup() %>%
+
+#I then feed that data table into ggplot and make some column charts broken down by age group. 
+#I am seeking to emulate Figure 5.3: Religious preferences by Region in the data visualization textbook, 
+  #so I assign party to the x axis and the fill aesthetic, flip the coordinates, and facet the grid by age group. 
+  ggplot(aes(x = reorder(file_party, desc(file_party)), y = pct, fill = file_party)) + 
+  geom_col(position = "dodge2") + 
+  coord_flip() + 
+  facet_grid(~ager) + 
+  #I also manually decide the colors to correspond to the colors traditionally associated with the parties. 
+  #I assign black to the "Other" category to avoid association with any particular third party or partisan lean.
+  scale_fill_manual(values=c("Republican" = "red", "Democratic" = "blue", "Other" = "black")) +
+  #Finally I add some descriptive labels. 
+  labs(x = "Party Identification", 
+       y = "Percent", 
+       fill = "Party ID",
+       title = "Party Identification by Age",
+       caption = "Source: New York Times Upshot/Siena College 2018 live polls")
+  
 ```
