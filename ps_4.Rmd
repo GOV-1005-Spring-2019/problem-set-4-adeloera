@@ -25,6 +25,13 @@ poll <- read_csv(
     final_weight = col_double(),
     timestamp = col_datetime(format = "")))
 
+#I also order the education and ethnicity variables by hand because I will want them ordered later.
+
+poll$race_eth <- poll$race_eth %>% fct_relevel("White", "Black", "Hispanic", "Asian", "Other")
+
+poll$educ <- poll$educ %>% fct_relevel("Graduate or Professional Degree", "Bachelors' degree", "Some college or trade school", "High school", "Grade school")
+
+
 ```
 
 ## Question 1
@@ -70,17 +77,15 @@ table <- poll %>%
   ungroup()
 
 #Now I use the gt package to turn the tibble I have into a chart like the one in the PSet description
-#when I pipe the table into the gt command I first specify the order of the rows to match the ones in the sample chart.
-table[c(5, 2, 3, 1, 4),] %>%
-gt() %>% 
+gt(table) %>%
   #I add a title and subtitle to describe what the chart is showing.
   tab_header(
     title = "Polling Results in the North Carolina 9th Congressional District",
     subtitle = "Based on 3rd wave of polling, 10/26/18-10/31/18"
     ) %>% 
-  #I also add a note about the source of our data, which appears to be The Upshot.
+  #I also add a note about the source of our data, which was also absent from the example. 
   tab_source_note(
-    source_note = "Source: The UpShot"
+    source_note = "Source: New York Times Upshot/Siena College 2018 live polls"
     ) %>%
   #I use unabreviated column labels because I believe it is marginally clearer. 
   cols_label(
@@ -98,8 +103,16 @@ gt() %>%
 
 
 ## Question 3
+```{r violins}
 
+
+
+```
 
 
 ## Question 4
 
+```{r cool}
+  
+
+```
