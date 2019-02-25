@@ -140,11 +140,17 @@ ggplot(aes(y = final_weight, x = reorder(educ, desc(educ)))) +
 
 #First I create a datatable with the percentage of each age group identifying with each party
 poll %>% 
+  #For this I select the variables for party identification, age, and survey weight. 
   select(file_party, ager, final_weight) %>% 
+  #Before going further I remove the observations with unknown ages.
   filter(ager != "[DO NOT READ] Refused") %>% 
+  #Then I group by age and party identification.
   group_by(ager, file_party) %>% 
+  #I then get counts for each combination of party ID and age, weighted by the survey weights.
   summarize(total = sum(final_weight)) %>%   
+  #Then I get the percentages of each age group that each party identification category represents.
   mutate(freq = total / sum(total), pct = round((freq*100), 0)) %>%
+  #Lastly I ungroup for peace of mind. 
   ungroup() %>%
 
 #I then feed that data table into ggplot and make some column charts broken down by age group. 
