@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(gt)
 library(tidyverse)
 library(broom)
+library(naniar)
 
 #Next I load in the poll data I will be using to answer the questions, adding the column types arguments to my code.
 poll <- read_csv(
@@ -25,8 +26,10 @@ poll <- read_csv(
     final_weight = col_double(),
     timestamp = col_datetime(format = "")))
 
-#I also order the education and ethnicity variables by hand because I will want them ordered later.
+#Now I recode the response variable so the values that give "3" aren't problematic later on.
+poll$response <- poll$response %>% fct_recode(Third = "3")
 
+#I also order the education, ethnicity, and party ID variables by hand because I will want them ordered later.
 poll$race_eth <- poll$race_eth %>% fct_relevel("White", "Black", "Hispanic", "Asian", "Other")
 
 poll$educ <- poll$educ %>% fct_relevel("Graduate or Professional Degree", "Bachelors' degree", "Some college or trade school", "High school", "Grade school")
@@ -51,6 +54,7 @@ The first response of Rep came `r as.integer((poll %>% filter(response == "Dem")
 
 ## Question 2
 
+
 ```{r table, echo = FALSE} 
 #To begin I create a dataset with the information and shape that we want: 
 #A five by three table where each row represents an ethnicity 
@@ -61,20 +65,22 @@ table <- poll %>%
   select(response, race_eth, final_weight) %>% 
   #I then group by race/ethnicity and response to get total counts for each cell.
   group_by(race_eth, response) %>% 
-  #When I sum to get total counts for each cell I need to use to survey weights to make sure my results are representative.
+  #When I sum to get total counts for each cell use to survey weights to make sure my results are representative.
   summarize(total = sum(final_weight)) %>%   
   #Next I drop the observations I cant work with because they dont have one of the key variables.
-  filter(race_eth != "[DO NOT READ] Don't know/Refused" ,response != "3") %>% 
+  filter(race_eth != "[DO NOT READ] Don't know/Refused") %>%
   #Now I tidy the data to get the format we want
   spread(key =  response, value = total) %>%
   #Since there is an NA in the resulting table which will cause problems later I replace NA's with zeros.
   replace(is.na(.), 0) %>%
   #Now I turn the counts I have in each cell into proportions
-  mutate(all = Dem + Rep + Und,
+  mutate(all = Dem + Rep + Und + Third, 
          Dem = Dem / all,
          Rep = Rep / all,
          Und = Und / all) %>% 
-  select(-all) %>%
+  select(-all, -Third) %>%
+  #I also convert the zero value for asian undecideds back into an "NA". 
+  replace_with_na(replace = list(Und = 0)) %>%
   #Finally I ungroup to make the gt commands below work. 
   ungroup()
 
@@ -96,10 +102,9 @@ gt(table) %>%
     Rep = "Republican",
     Und = "Undecided"
   ) %>%
-  #I format the numbers, previously proportions, into percentages. 
-  #I prefer not to round to the nearest integer because it creates the impression that the bottom row sums to 101%. 
+  #I format the numbers, previously proportions, into percentages, and round to integer values.
   fmt_percent(columns = vars(Dem, Rep, Und),
-              decimals = 2) 
+              decimals = 0) 
   
 ```
 
@@ -164,10 +169,10 @@ poll %>%
   #I assign black to the "Other" category to avoid association with any particular third party or partisan lean.
   scale_fill_manual(values=c("Republican" = "red", "Democratic" = "blue", "Other" = "black")) +
   #Finally I add some descriptive labels. 
-  labs(x = "Party Identification", 
+  labs(x = NULL, 
        y = "Percent", 
        fill = "Party ID",
        title = "Party Identification by Age",
-       caption = "Source: New York Times Upshot/Siena College 2018 live polls")
+       caption = "Source: New York Times Upshot/Siena College 2018 live polls") 
   
 ```
