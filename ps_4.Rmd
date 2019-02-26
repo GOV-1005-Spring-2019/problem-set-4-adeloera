@@ -49,7 +49,7 @@ There are two gender variables (`gender` and `gender_combined`). There are `r fi
 
 There are `r poll %>% filter(race_eth == "White", file_race_black != "White") %>% nrow()` respondents listed as “White” under `race_eth` who are not listed as “White” under `file_race_black`.
 
-The first response of Rep came `r as.integer((poll %>% filter(response == "Dem") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1))- (poll %>% filter(response == "Rep") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1)))` minutes (rounded to the nearest minute) before the first response of Dem. In clearer language, the first response of Rep came (roughly) `r as.integer((poll %>% filter(response == "Rep") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1))- (poll %>% filter(response == "Dem") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1)))` minutes after the first response of Dem. 
+The first response of Dem came `r as.integer((poll %>% filter(response == "Rep") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1)) - (poll %>% filter(response == "Dem") %>% arrange(timestamp) %>% select(timestamp) %>% slice(1)))` minutes (rounded to the nearest minute) before the first response of Rep. 
 
 
 ## Question 2
@@ -60,7 +60,7 @@ The first response of Rep came `r as.integer((poll %>% filter(response == "Dem")
 #A five by three table where each row represents an ethnicity 
 #and the columns are the percentage of the vote for each party 
 
-table <- poll %>% 
+poll %>% 
   #I begin by selecting only the variables I'll use: response, race/ethnicity, and the survey weights.
   select(response, race_eth, final_weight) %>% 
   #I then group by race/ethnicity and response to get total counts for each cell.
@@ -82,10 +82,10 @@ table <- poll %>%
   #I also convert the zero value for asian undecideds back into an "NA". 
   replace_with_na(replace = list(Und = 0)) %>%
   #Finally I ungroup to make the gt commands below work. 
-  ungroup()
+  ungroup() %>%
 
 #Now I use the gt package to turn the tibble I have into a chart like the one in the PSet description
-gt(table) %>%
+gt() %>%
   #I add a title and subtitle to describe what the chart is showing.
   tab_header(
     title = "Polling Results in the North Carolina 9th Congressional District",
